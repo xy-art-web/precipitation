@@ -1,21 +1,25 @@
-import pandas as pd
+# /// script
+# dependencies = ["pandas", "matplotlib", "numpy"]
+# ///
+
+import io
+from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
-from pathlib import Path
+import pandas as pd
 
 # ---------------------------------------------------------------------------
-# 1. 加载数据 (Load Data)
+# 1. Load Data
 # ---------------------------------------------------------------------------
 HERE = Path(__file__).parent
 DATA_PATH = HERE / "data" / "enso_data.csv"
 OUT_DIR = HERE / "out"
 OUT_DIR.mkdir(exist_ok=True)
 
-# 如果本地存在 CSV 则读取，不存在则直接载入内存数据
+# Read CSV if present locally, otherwise fall back to embedded data
 if DATA_PATH.exists():
     df = pd.read_csv(DATA_PATH)
 else:
-    import io
     data_str = """Year,ENSO_Phase,ONI_Index,Precipitation_Anomaly_mm,Precipitation_Anomaly_pct
 1998,El Nino,2.1,230,18.5
 1999,La Nina,-1.5,-120,-9.6
@@ -48,32 +52,29 @@ else:
     df = pd.read_csv(io.StringIO(data_str))
 
 # ---------------------------------------------------------------------------
-# 2. 清新配色与审美参数 (Style & Fresh Colors)
+# 2. Fresh Aesthetic Color Palette & Parameters
 # ---------------------------------------------------------------------------
-BG_COLOR = "#FAFAFA"       # 极简浅灰白背景
-TEXT_COLOR = "#2B2B2B"     # 深灰色优雅字号
+BG_COLOR = "#FAFAFA"       # Light off-white background
+TEXT_COLOR = "#2B2B2B"     # Elegant dark charcoal text
 
-# 莫兰迪/柔和色系配色：
+# Morandi / Muted aesthetic color map:
 COLOR_MAP = {
-    "El Nino": "#E07A5F",   # 珊瑚柔红 (Warm Soft Coral)
-    "La Nina": "#3D405B",   # 雾霭黛蓝 (Fresh Deep Teal/Slate)
-    "Neutral": "#8D99AE"    # 鼠尾草灰 (Muted Sage Gray)
+    "El Nino": "#E07A5F",   # Muted Soft Coral
+    "La Nina": "#3D405B",   # Slate Blue / Fresh Teal
+    "Neutral": "#8D99AE"    # Sage Gray
 }
 
-# 气泡大小映射：根据 ONI 指数绝对值计算气泡面积
-bubble_sizes = np.abs(df["ONI_Index"]) * 350 + 80
-
 # ---------------------------------------------------------------------------
-# 3. 创建画布并绘制气泡图 (Create Plot)
+# 3. Create Canvas & Draw Bubble Chart
 # ---------------------------------------------------------------------------
 fig, ax = plt.subplots(figsize=(12, 6.5), dpi=300)
 fig.patch.set_facecolor(BG_COLOR)
 ax.set_facecolor(BG_COLOR)
 
-# 绘制辅助线 (0 基准线)
+# Baseline zero line
 ax.axhline(0, color="#D3D3D3", linestyle="--", linewidth=1, zorder=1)
 
-# 按类别绘制气泡以生成优雅图例 (Plot Phase by Phase)
+# Plot bubbles group by group for clean legend rendering
 for phase, color in COLOR_MAP.items():
     subset = df[df["ENSO_Phase"] == phase]
     sizes = np.abs(subset["ONI_Index"]) * 350 + 80
@@ -90,35 +91,33 @@ for phase, color in COLOR_MAP.items():
     )
 
 # ---------------------------------------------------------------------------
-# 4. 细节调整与标注 (Details & Typography)
+# 4. Details, Typography & Styling
 # ---------------------------------------------------------------------------
-# 标题与坐标轴标签
 ax.set_title("Precipitation Anomaly & ENSO Intensity (1998–2025)", 
              fontsize=16, fontweight="bold", pad=20, color=TEXT_COLOR)
 ax.set_xlabel("Year", fontsize=11, labelpad=10, color=TEXT_COLOR)
 ax.set_ylabel("Precipitation Anomaly (%)", fontsize=11, labelpad=10, color=TEXT_COLOR)
 
-# 设置 X 轴年份刻度
 ax.set_xticks(df["Year"])
 ax.set_xticklabels(df["Year"], rotation=45, fontsize=8, color=TEXT_COLOR)
 
-# 隐藏上方和右侧的边框线 (Clean Spines)
+# Clean up frame spines
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.spines['left'].set_color('#CCCCCC')
 ax.spines['bottom'].set_color('#CCCCCC')
 
-# 网格线
+# Light gridlines
 ax.grid(True, linestyle=":", alpha=0.4, color="#AAAAAA", zorder=0)
 
-# 图例设置 (Legend)
+# Configure legend
 legend = ax.legend(title="ENSO Phase", frameon=True, facecolor=BG_COLOR, edgecolor="none", loc="upper left")
 legend.get_title().set_color(TEXT_COLOR)
 for text in legend.get_texts():
     text.set_color(TEXT_COLOR)
 
 # ---------------------------------------------------------------------------
-# 5. 保存图表 (Save Output)
+# 5. Save Figure Output
 # ---------------------------------------------------------------------------
 plt.tight_layout()
 output_file = OUT_DIR / "enso_bubble_chart.png"
