@@ -4,7 +4,7 @@ Walmart is the largest retail chain in the United States, but its spatial footpr
 
 It is the submission for Assignment 2: one published dataset of geographical points, one high-density thematic visualization, and every data processing step documented.
 
-![Walmart Store Density Map](out/walmart_map_final.png)
+![Walmart Store Density Map](out/walmart_map_with_graticules.png)
 
 ## The phenomenon
 
